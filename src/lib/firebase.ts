@@ -1,5 +1,14 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -7,10 +16,21 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+// Configure persistence to keep the user logged in
+setPersistence(auth, browserLocalPersistence).catch(console.error);
+
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
+// Standard prompt for account selection
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const loginWithGoogleRedirect = () => signInWithRedirect(auth, googleProvider);
+export const getGoogleRedirectResult = () => getRedirectResult(auth);
 export const logout = () => signOut(auth);
 
 export enum OperationType {

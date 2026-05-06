@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginWithGoogle, auth } from '../../lib/firebase';
+import { loginWithGoogle, loginWithGoogleRedirect, getGoogleRedirectResult, auth } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { motion } from 'motion/react';
 import { ShoppingBag, Star, LogIn, AlertCircle } from 'lucide-react';
@@ -10,54 +10,109 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    return onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const isMasterAdmin = user.email === 'lojadiscretaico@gmail.com';
-        let isAdminInCollection = false;
+  const checkAdminPermission = async (user: any) => {
+    const isMasterAdmin = user.email === 'lojadiscretaico@gmail.com';
+    let isAdminInCollection = false;
 
-        if (!isMasterAdmin) {
-          try {
-            const { doc, getDoc } = await import('firebase/firestore');
-            const { db } = await import('../../lib/firebase');
-            const adminDoc = await getDoc(doc(db, 'admins', user.email!));
-            isAdminInCollection = adminDoc.exists();
-          } catch (err) {
-            console.error('Error checking admin status:', err);
-          }
-        }
-
-        if (isMasterAdmin || isAdminInCollection) {
-          navigate('/admin/dashboard');
-        }
-      }
-    });
-  }, [navigate]);
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await loginWithGoogle();
-      const user = result.user;
-      
-      const isMasterAdmin = user.email === 'lojadiscretaico@gmail.com';
-      let isAdminInCollection = false;
-
-      if (!isMasterAdmin) {
+    if (!isMasterAdmin) {
+      try {
         const { doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('../../lib/firebase');
         const adminDoc = await getDoc(doc(db, 'admins', user.email!));
         isAdminInCollection = adminDoc.exists();
+      } catch (err) {
+        console.error('Error checking admin status:', err);
       }
+    }
 
-      if (!isMasterAdmin && !isAdminInCollection) {
-        setError('Acesso restrito. Você não possui permissão administrativa.');
-        auth.signOut();
+    if (isMasterAdmin || isAdminInCollection) {
+      navigate('/admin/dashboard');
+      return true;
+    } else {
+      setError('Acesso restrito. Você não possui permissão administrativa.');
+      auth.signOut();
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    
+    // 1. Check for redirection result (handled on page load after redirection)
+    getGoogleRedirectResult()
+      .then((result) => {
+        if (result?.user) {
+          checkAdminPermission(result.user);
+        }
+      })
+      .catch((err) => {
+        console.error('Redirect login error:', err);
+        handleAuthError(err);
+      })
+      .finally(() => setLoading(false));
+
+    // 2. Auth state observer
+    return onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        checkAdminPermission(user);
+      }
+    });
+  }, [navigate]);
+
+  const handleAuthError = (err: any) => {
+    console.error('Detailed Auth Error:', {
+      code: err.code,
+      message: err.message,
+      stack: err.stack,
+      customData: err.customData
+    });
+
+    switch (err.code) {
+      case 'auth/popup-closed-by-user':
+        setError('A janela de login foi fechada antes da conclusão.');
+        break;
+      case 'auth/unauthorized-domain':
+        setError('Este domínio não está autorizado no Firebase Console. Adicione eudalocacao.netlify.app aos domínios autorizados.');
+        break;
+      case 'auth/operation-not-allowed':
+        setError('O login com Google não está ativado no Firebase Console.');
+        break;
+      case 'auth/popup-blocked':
+        setError('O pop-up de login foi bloqueado pelo navegador. Tente permitir pop-ups.');
+        break;
+      case 'auth/network-request-failed':
+        setError('Erro de rede. Verifique sua conexão com a internet.');
+        break;
+      default:
+        setError(`Erro ao fazer login (${err.code || 'unknown'}). Tente novamente.`);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (loading) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // First try with popup
+      console.log('Attempting login with popup...');
+      const result = await loginWithGoogle();
+      if (result.user) {
+        await checkAdminPermission(result.user);
       }
     } catch (err: any) {
-      setError('Erro ao fazer login. Tente novamente.');
-      console.error(err);
+      // If popup is blocked or fails, automatically try redirect
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+        console.log('Popup failed, trying redirect instead...');
+        try {
+          await loginWithGoogleRedirect();
+        } catch (redirectErr) {
+          handleAuthError(redirectErr);
+        }
+      } else {
+        handleAuthError(err);
+      }
     } finally {
       setLoading(false);
     }
