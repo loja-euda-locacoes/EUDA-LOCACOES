@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Global Helpers
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "lojadiscretaico@gmail.com" ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_.@\\-]+$');
+    }
+
+    // --- Entity Validations ---
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.images is list && data.images.size() <= 10;
+    }
+
+    function isValidRental(data) {
+      return data.customerId is string && data.productId is string &&
+             data.status in ['active', 'picked_up', 'finished', 'late', 'canceled'] &&
+             data.pickupDate is string && data.returnDate is string;
+    }
+
+    function isValidCustomer(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.phone is string && data.phone.size() <= 20;
+    }
+
+    // --- Collection Rules ---
+
+    // Products: Public read, Admin write
+    match /products/{productId} {
+      allow read, list: if true;
+      allow create: if isAdmin() && isValidProduct(incoming()) && isValidId(productId);
+      allow update: if isAdmin() && isValidProduct(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Settings: Public read, Admin write
+    match /settings/{settingId} {
+      allow read, list: if true;
+      allow write: if isAdmin() && isValidId(settingId);
+    }
+
+    // Customers: Admin only
+    match /customers/{customerId} {
+      allow read, list: if isAdmin();
+      allow create: if isAdmin() && isValidCustomer(incoming()) && isValidId(customerId);
+      allow update: if isAdmin() && isValidCustomer(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Rentals: Admin only
+    match /rentals/{rentalId} {
+      allow read, list: if isAdmin();
+      allow create: if isAdmin() && isValidRental(incoming()) && isValidId(rentalId);
+      allow update: if isAdmin() && isValidRental(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Admins Management
+    match /admins/{adminId} {
+      // Any admin/master can see the list
+      allow read, list: if isAdmin();
+      // Any admin/master can add/remove admins
+      allow write: if isAdmin() && isValidId(adminId);
+    }
+  }
+}

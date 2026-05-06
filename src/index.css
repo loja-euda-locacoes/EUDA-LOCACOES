@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  --font-accent: "Playfair Display", serif;
+
+  --color-brand-red: #D92B04;
+  --color-brand-yellow: #F29F05;
+  --color-brand-blue: #03658C;
+  --color-brand-orange: #D92B04;
+  --color-brand-bg: #FEF9EC;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-brand-bg text-[#1A1A1A] font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-black tracking-tight uppercase;
+  }
+}
+
+.junino-bg {
+  background-image: radial-gradient(var(--color-brand-yellow) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
+.flag-clip {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+}

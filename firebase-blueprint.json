@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A dress available for rent",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the dress" },
+        "description": { "type": "string", "description": "Full description" },
+        "price": { "type": "number", "description": "Rental price" },
+        "measurements": { "type": "string", "description": "Measurements (e.g., Bust: 90cm, Waist: 70cm)" },
+        "recommendations": { "type": "string", "description": "Who it is ideal for" },
+        "images": { "type": "array", "items": { "type": "string" }, "description": "List of image URLs" },
+        "category": { "type": "string", "description": "Category (e.g., Adult, Child, Luxury)" },
+        "mostWanted": { "type": "boolean", "description": "If it should be highlighted as most wanted" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "images"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global shop configurations",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "impactPhrase": { "type": "string" },
+        "bannerUrl": { "type": "string" },
+        "fixedFine": { "type": "number" },
+        "percentFine": { "type": "number" },
+        "toleranceHours": { "type": "number" },
+        "defaultPickupTime": { "type": "string" },
+        "defaultReturnTime": { "type": "string" }
+      }
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "A client of the rental shop",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "cpf": { "type": "string" },
+        "address": { "type": "string" },
+        "instagram": { "type": "string" },
+        "secondaryContactName": { "type": "string" },
+        "secondaryContactPhone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "cpf"]
+    },
+    "Rental": {
+      "title": "Rental",
+      "description": "A dress rental transaction",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "productPrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "picked_up", "finished", "late", "canceled"] },
+        "pickupDate": { "type": "string", "format": "date-time" },
+        "returnDate": { "type": "string", "format": "date-time" },
+        "totalValue": { "type": "number" },
+        "fineValue": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerId", "productId", "pickupDate", "returnDate", "status"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "An administrative user email",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "createdAt"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "Product",
+      "description": "Collection of all available dresses"
+    },
+    "settings": {
+      "schema": "Settings",
+      "description": "Global shop configuration document (usually just /settings/global)"
+    },
+    "customers": {
+      "schema": "Customer",
+      "description": "Collection of shop customers"
+    },
+    "rentals": {
+      "schema": "Rental",
+      "description": "Collection of all rental transactions"
+    },
+    "admins": {
+      "schema": "Admin",
+      "description": "Collection of administrative users (document ID is the email)"
+    }
+  }
+}
