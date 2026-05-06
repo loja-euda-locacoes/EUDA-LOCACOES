@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { WhatsAppFloat } from './WhatsAppFloat';
+import { PWAPrompt } from './PWAPrompt';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface LayoutProps {
@@ -26,6 +27,7 @@ export function Layout({ children }: LayoutProps) {
       </main>
       <Footer />
       <WhatsAppFloat />
+      <PWAPrompt />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Product, Settings } from '../../types';
@@ -111,6 +112,34 @@ export function ProductDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
+      <Helmet>
+        <title>{product.name} | Euda Aluguéis</title>
+        <meta name="description" content={product.description} />
+        <meta property="og:title" content={`${product.name} | Euda Aluguéis`} />
+        <meta property="og:description" content={product.description} />
+        <meta property="og:image" content={getDriveDirectLink(product.images[0])} />
+        <meta property="og:type" content="product" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": product.images.map(img => getDriveDirectLink(img)),
+            "description": product.description,
+            "brand": {
+              "@type": "Brand",
+              "name": "Euda Aluguéis"
+            },
+            "offers": {
+              "@type": "Offer",
+              "priceCurrency": "BRL",
+              "price": product.price,
+              "availability": "https://schema.org/InStock"
+            }
+          })}
+        </script>
+      </Helmet>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Image Gallery */}
         <div className="space-y-4">

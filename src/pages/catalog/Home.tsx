@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Product, Settings } from '../../types';
@@ -50,6 +51,29 @@ export function Home() {
 
   return (
     <div className="space-y-20 pb-20">
+      <Helmet>
+        <title>{settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo de Vestidos Juninos'}</title>
+        <meta property="og:title" content={settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo de Vestidos Juninos'} />
+        <meta property="og:image" content={settings?.logoUrl ? getDriveDirectLink(settings.logoUrl) : '/og-image.jpg'} />
+        <meta property="og:description" content={settings?.impactPhrase || "Aluguel de vestidos juninos profissionais em Icó-CE. Coleção exclusiva."} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ClothingStore",
+            "name": settings?.storeName || "Euda Aluguéis",
+            "description": settings?.impactPhrase || "Aluguel de vestidos juninos profissionais em Icó-CE.",
+            "url": window.location.origin,
+            "telephone": settings?.whatsappNumber,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Icó",
+              "addressRegion": "CE",
+              "addressCountry": "BR"
+            }
+          })}
+        </script>
+      </Helmet>
+
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 junino-bg opacity-10" />

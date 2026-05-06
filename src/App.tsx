@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { Layout } from './components/common/Layout';
 import { Home } from './pages/catalog/Home';
@@ -19,6 +20,13 @@ export default function App() {
   return (
     <NotificationProvider>
       <Router>
+        <Helmet>
+          <title>Euda Aluguéis | Catálogo de Vestidos Juninos</title>
+          <meta name="description" content="Aluguel de vestidos juninos profissionais em Icó-CE. Coleção exclusiva com tradição e elegância para o seu São João." />
+          <meta property="og:site_name" content="Euda Aluguéis" />
+          <meta property="og:locale" content="pt_BR" />
+          <meta name="theme-color" content="#D92B04" />
+        </Helmet>
         <ScrollToTop />
         <Routes>
           {/* Public Routes */}
