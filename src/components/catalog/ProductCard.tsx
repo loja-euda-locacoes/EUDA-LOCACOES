@@ -21,10 +21,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       whileHover={{ y: -10 }}
       className="group relative bg-white rounded-[2rem] overflow-hidden shadow-[0_10px_30px_rgba(217,43,4,0.05)] border border-[#E5E5E5] transition-all duration-300 flex flex-col h-full"
     >
-      <Link to={`/produto/${product.id}`} className="block relative flex-1">
+      <Link to={`/produto/${product.slug || product.id}`} className="block relative flex-1">
         <div className="relative aspect-[4/5] overflow-hidden bg-[#F7F7F7]">
           <img
-            src={getDriveDirectLink(product.images[0]) || 'https://via.placeholder.com/400x600?text=Vestido'}
+            src={getDriveDirectLink(product.mainImage || product.images[0]) || 'https://via.placeholder.com/400x600?text=Vestido'}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             referrerPolicy="no-referrer"
@@ -40,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
 
       <div className="p-6 space-y-4 flex flex-col">
-        <Link to={`/produto/${product.id}`} className="block">
+        <Link to={`/produto/${product.slug || product.id}`} className="block">
           <div>
             <h3 className="text-xl font-black text-[#1A1A1A] leading-tight mb-1">{product.name}</h3>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -64,7 +64,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="text-brand-red font-black text-2xl tracking-tight">
             {formatCurrency(product.price)}
           </span>
-          <Link to={`/produto/${product.id}`} className="bg-[#25D366] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2">
+          <Link to={`/produto/${product.slug || product.id}`} className="bg-[#25D366] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2">
             Alugar
           </Link>
         </div>

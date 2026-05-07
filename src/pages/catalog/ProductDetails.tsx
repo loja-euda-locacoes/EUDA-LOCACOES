@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Product, Settings } from '../../types';
 import { formatCurrency, generateWhatsAppLink, getDriveDirectLink } from '../../lib/utils';
@@ -25,12 +25,23 @@ export function ProductDetails() {
 
     const fetchProduct = async () => {
       try {
+        // Try fetching by ID first (fallback)
         const docRef = doc(db, 'products', id);
         const docSnap = await getDoc(docRef);
+        
         if (docSnap.exists()) {
           setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
         } else {
-          navigate('/');
+          // If ID fails, try fetching by Slug
+          const q = query(collection(db, 'products'), where('slug', '==', id));
+          const querySnap = await getDocs(q);
+          
+          if (!querySnap.empty) {
+            const doc = querySnap.docs[0];
+            setProduct({ id: doc.id, ...doc.data() } as Product);
+          } else {
+            navigate('/');
+          }
         }
       } catch (err) {
         handleFirestoreError(err, OperationType.GET, `products/${id}`);
@@ -59,8 +70,11 @@ export function ProductDetails() {
       if (metaTitle) metaTitle.setAttribute('content', product.name);
       
       const metaImg = document.querySelector('meta[property="og:image"]');
-      if (metaImg && product.images.length > 0) {
-        metaImg.setAttribute('content', getDriveDirectLink(product.images[0]));
+      if (metaImg) {
+        const previewUrl = product.mainImage || (product.images.length > 0 ? product.images[0] : '');
+        if (previewUrl) {
+          metaImg.setAttribute('content', getDriveDirectLink(previewUrl));
+        }
       }
 
       // Cleanup
@@ -117,8 +131,8 @@ export function ProductDetails() {
         <meta name="description" content={product.description} />
         <meta property="og:title" content={`${product.name} | Euda Aluguéis`} />
         <meta property="og:description" content={product.description} />
-        <meta property="og:image" content={getDriveDirectLink(product.images[0])} />
-        <meta name="twitter:image" content={getDriveDirectLink(product.images[0])} />
+        <meta property="og:image" content={getDriveDirectLink(product.mainImage || product.images[0])} />
+        <meta name="twitter:image" content={getDriveDirectLink(product.mainImage || product.images[0])} />
         <meta property="og:type" content="product" />
         <meta property="og:url" content={window.location.href} />
         <script type="application/ld+json">

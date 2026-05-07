@@ -19,15 +19,28 @@ export function ProductForm() {
   
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
+    slug: '',
     description: '',
     price: 0,
     measurements: '',
     recommendations: '',
     images: [],
+    mainImage: '',
     videoUrl: '',
     mostWanted: false,
     category: 'Adulto',
   });
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
 
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -66,6 +79,7 @@ export function ProductForm() {
               ...prev,
               ...data,
               name: data.name || '',
+              slug: data.slug || '',
               description: data.description || '',
               price: data.price || 0,
               measurements: data.measurements || '',
@@ -74,6 +88,7 @@ export function ProductForm() {
               category: data.category || 'Adulto',
               mostWanted: !!data.mostWanted,
               images: data.images || [],
+              mainImage: data.mainImage || (data.images && data.images[0]) || '',
             }));
           }
         } catch (err) {
@@ -102,9 +117,11 @@ export function ProductForm() {
       return;
     }
 
+    const newImages = [...(formData.images || []), directUrl];
     setFormData(prev => ({
       ...prev,
-      images: [...(prev.images || []), directUrl]
+      images: newImages,
+      mainImage: !prev.mainImage ? directUrl : prev.mainImage
     }));
     setDriveLink('');
     notify('Imagem adicionada com sucesso!', 'success');
@@ -131,9 +148,21 @@ export function ProductForm() {
   };
 
   const removeImage = (index: number) => {
+    const imageToRemove = formData.images![index];
     const newImages = [...(formData.images || [])];
     newImages.splice(index, 1);
-    setFormData({ ...formData, images: newImages });
+    
+    let newMainImage = formData.mainImage;
+    if (imageToRemove === formData.mainImage) {
+      newMainImage = newImages.length > 0 ? newImages[0] : '';
+    }
+    
+    setFormData({ ...formData, images: newImages, mainImage: newMainImage });
+  };
+
+  const setAsMainImage = (url: string) => {
+    setFormData({ ...formData, mainImage: url });
+    notify('Imagem principal definida!', 'success');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,8 +174,11 @@ export function ProductForm() {
 
     setLoading(true);
     try {
+      const finalSlug = formData.slug || generateSlug(formData.name);
       const productData = {
         ...formData,
+        slug: finalSlug,
+        mainImage: formData.mainImage || (formData.images && formData.images[0]) || '',
         updatedAt: new Date().toISOString(),
       };
 
@@ -199,10 +231,30 @@ export function ProductForm() {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setFormData({ 
+                    ...formData, 
+                    name: newName,
+                    slug: generateSlug(newName)
+                  });
+                }}
                 className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-orange/30 focus:bg-white rounded-2xl p-4 transition-all"
                 placeholder="Ex: Noiva do Sertão"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Slug (URL Amigável)</label>
+              <input
+                type="text"
+                required
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-orange/30 focus:bg-white rounded-2xl p-4 transition-all text-xs font-mono"
+                placeholder="ex-noiva-do-sertao"
+              />
+              <p className="text-[10px] text-gray-400 px-1">O link do produto será: eudalocacao.netlify.app/produto/{formData.slug || '...'}</p>
             </div>
 
             <div className="space-y-2">
@@ -304,17 +356,38 @@ export function ProductForm() {
                   <div key={url} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
                     <img 
                       src={getDriveDirectLink(url)} 
-                      className="w-full h-full object-cover" 
+                      className={cn(
+                        "w-full h-full object-cover transition-all",
+                        formData.mainImage === url ? "ring-4 ring-brand-orange" : ""
+                      )} 
                       alt="" 
                       referrerPolicy="no-referrer" 
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    
+                    {formData.mainImage === url && (
+                      <div className="absolute top-2 left-2 bg-brand-orange text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
+                        Principal
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2">
+                      {formData.mainImage !== url && (
+                        <button
+                          type="button"
+                          onClick={() => setAsMainImage(url)}
+                          className="bg-brand-orange text-white p-2 rounded-xl text-[10px] font-black uppercase tracking-widest px-3"
+                        >
+                          Tornar Principal
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="bg-red-500 text-white p-2 rounded-xl text-[10px] font-black uppercase tracking-widest px-3"
+                      >
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

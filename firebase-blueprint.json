@@ -5,18 +5,20 @@
       "description": "A dress available for rent",
       "type": "object",
       "properties": {
+        "slug": { "type": "string", "description": "SEO friendly URL slug" },
         "name": { "type": "string", "description": "Name of the dress" },
         "description": { "type": "string", "description": "Full description" },
         "price": { "type": "number", "description": "Rental price" },
         "measurements": { "type": "string", "description": "Measurements (e.g., Bust: 90cm, Waist: 70cm)" },
         "recommendations": { "type": "string", "description": "Who it is ideal for" },
         "images": { "type": "array", "items": { "type": "string" }, "description": "List of image URLs" },
+        "mainImage": { "type": "string", "description": "The principal image URL used for previews" },
         "category": { "type": "string", "description": "Category (e.g., Adult, Child, Luxury)" },
         "mostWanted": { "type": "boolean", "description": "If it should be highlighted as most wanted" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "price", "images"]
+      "required": ["name", "slug", "price", "images"]
     },
     "Settings": {
       "title": "Settings",

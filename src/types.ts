@@ -1,11 +1,13 @@
 export interface Product {
   id: string;
+  slug: string;
   name: string;
   description: string;
   price: number;
   measurements: string;
   recommendations: string;
   images: string[];
+  mainImage?: string;
   category?: string;
   videoUrl?: string;
   mostWanted?: boolean;
