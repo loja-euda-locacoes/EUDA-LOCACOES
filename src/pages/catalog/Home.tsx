@@ -52,9 +52,10 @@ export function Home() {
   return (
     <div className="space-y-20 pb-20">
       <Helmet>
-        <title>{settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo de Vestidos Juninos'}</title>
-        <meta property="og:title" content={settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo de Vestidos Juninos'} />
-        <meta property="og:image" content={settings?.logoUrl ? getDriveDirectLink(settings.logoUrl) : '/og-image.jpg'} />
+        <title>{settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo'}</title>
+        <meta property="og:title" content={settings?.storeName ? `${settings.storeName} | Catálogo` : 'Euda Aluguéis | Catálogo'} />
+        <meta property="og:image" content={settings?.logoUrl ? getDriveDirectLink(settings.logoUrl) : `${window.location.origin}/logo.png`} />
+        <meta name="twitter:image" content={settings?.logoUrl ? getDriveDirectLink(settings.logoUrl) : `${window.location.origin}/logo.png`} />
         <meta property="og:description" content={settings?.impactPhrase || "Aluguel de vestidos juninos profissionais em Icó-CE. Coleção exclusiva."} />
         <script type="application/ld+json">
           {JSON.stringify({

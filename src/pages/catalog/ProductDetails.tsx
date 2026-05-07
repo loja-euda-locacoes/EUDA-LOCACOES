@@ -118,7 +118,9 @@ export function ProductDetails() {
         <meta property="og:title" content={`${product.name} | Euda Aluguéis`} />
         <meta property="og:description" content={product.description} />
         <meta property="og:image" content={getDriveDirectLink(product.images[0])} />
+        <meta name="twitter:image" content={getDriveDirectLink(product.images[0])} />
         <meta property="og:type" content="product" />
+        <meta property="og:url" content={window.location.href} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org/",
