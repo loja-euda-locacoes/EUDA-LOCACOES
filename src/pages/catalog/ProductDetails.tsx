@@ -184,14 +184,15 @@ export function ProductDetails() {
                   className="w-full h-full bg-black relative"
                 >
                   <video
-                    src={getDriveVideoDirectLink(product.videoUrl)}
                     className="w-full h-full object-cover"
                     autoPlay
                     loop
                     muted
                     playsInline
                     referrerPolicy="no-referrer"
-                  />
+                  >
+                    <source src={getDriveVideoDirectLink(product.videoUrl)} type="video/mp4" />
+                  </video>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -302,14 +303,15 @@ export function ProductDetails() {
                 </div>
                 <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-black border border-[#EEE] shadow-xl">
                   <video 
-                    src={getDriveVideoDirectLink(product.videoUrl)} 
                     className="w-full h-full object-cover" 
                     autoPlay
                     loop
                     muted
                     playsInline
                     referrerPolicy="no-referrer"
-                  />
+                  >
+                    <source src={getDriveVideoDirectLink(product.videoUrl)} type="video/mp4" />
+                  </video>
                 </div>
               </div>
             )}

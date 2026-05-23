@@ -43,14 +43,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 className="absolute inset-0 z-10 bg-black pointer-events-none"
               >
                 <video
-                  src={getDriveVideoDirectLink(product.videoUrl)}
                   className="w-full h-full object-cover"
                   autoPlay
                   loop
                   muted
                   playsInline
                   referrerPolicy="no-referrer"
-                />
+                >
+                  <source src={getDriveVideoDirectLink(product.videoUrl)} type="video/mp4" />
+                </video>
               </motion.div>
             )}
           </AnimatePresence>

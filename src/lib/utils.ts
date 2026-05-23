@@ -29,7 +29,7 @@ export function getDriveVideoDirectLink(url: string | undefined): string {
   const driveId = match ? (match[1] || match[2]) : null;
 
   if (driveId) {
-    return `https://lh3.googleusercontent.com/u/0/d/${driveId}`;
+    return `https://docs.google.com/uc?export=download&id=${driveId}`;
   }
   
   return url;
