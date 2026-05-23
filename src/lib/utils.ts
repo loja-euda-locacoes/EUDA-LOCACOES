@@ -20,6 +20,21 @@ export function getDriveDirectLink(url: string | undefined): string {
   return url;
 }
 
+export function getDriveVideoDirectLink(url: string | undefined): string {
+  if (!url) return '';
+  if (!url.includes('drive.google.com')) return url;
+
+  const regex = /\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/;
+  const match = url.match(regex);
+  const driveId = match ? (match[1] || match[2]) : null;
+
+  if (driveId) {
+    return `https://lh3.googleusercontent.com/u/0/d/${driveId}`;
+  }
+  
+  return url;
+}
+
 export function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',

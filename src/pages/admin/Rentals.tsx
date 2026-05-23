@@ -636,7 +636,7 @@ export function Rentals() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden"
             >
-              <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-8 max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit} className="p-6 md:p-12 space-y-6 md:space-y-8 max-h-[90vh] overflow-y-auto">
                 <div className="text-center space-y-2">
                   <h3 className="text-3xl font-display text-gray-900 leading-none">
                     {editingRentalId ? 'Editar Aluguel' : 'Novo Aluguel'}

@@ -4,6 +4,7 @@ import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 import { cn } from '../../lib/utils';
 
 interface NotificationToastProps {
+  key?: string;
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
   onClose: () => void;

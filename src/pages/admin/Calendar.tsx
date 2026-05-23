@@ -374,9 +374,9 @@ export function Calendar() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-[calc(100%-2rem)] md:w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
-              <div className="p-8 space-y-6">
+              <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-display text-gray-900">Detalhes do Aluguel</h3>
                   <button onClick={() => setViewingRental(null)} className="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-brand-red transition-all">

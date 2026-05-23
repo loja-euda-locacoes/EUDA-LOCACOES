@@ -38,18 +38,18 @@ export function ConfirmationModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-[3rem] shadow-2xl z-[10001] overflow-hidden"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] md:w-full max-w-sm bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl z-[10001] overflow-hidden max-h-[95vh] flex flex-col"
           >
             {/* Header Patterns */}
-            <div className="absolute top-0 left-0 w-full h-2 flex gap-1 opacity-60">
+            <div className="absolute top-0 left-0 w-full h-2 flex gap-1 opacity-60 shrink-0">
               <div className="flex-1 bg-brand-red h-full" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%)' }} />
               <div className="flex-1 bg-brand-yellow h-full" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%)' }} />
               <div className="flex-1 bg-brand-blue h-full" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%)' }} />
               <div className="flex-1 bg-brand-red h-full" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%)' }} />
               <div className="flex-1 bg-brand-yellow h-full" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 70%, 0% 100%)' }} />
             </div>
-
-            <div className="p-10 text-center space-y-6">
+ 
+            <div className="p-6 md:p-10 text-center space-y-6 overflow-y-auto flex-grow">
               <div className={cn(
                 "w-20 h-20 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-lg border border-black/5",
                 type === 'danger' ? 'bg-red-50 text-red-500' : 'bg-brand-yellow/10 text-brand-orange'

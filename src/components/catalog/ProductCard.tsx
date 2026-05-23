@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Product } from '../../types';
-import { formatCurrency, getDriveDirectLink } from '../../lib/utils';
+import { formatCurrency, getDriveDirectLink, getDriveVideoDirectLink } from '../../lib/utils';
 import { ArrowRight, Star, Calendar as CalendarIcon } from 'lucide-react';
 import { ProductAvailabilityModal } from './ProductAvailabilityModal';
 
@@ -12,6 +12,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [showAvailability, setShowAvailability] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
 
   return (
     <motion.div
@@ -19,6 +20,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -10 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="group relative bg-white rounded-[2rem] overflow-hidden shadow-[0_10px_30px_rgba(217,43,4,0.05)] border border-[#E5E5E5] transition-all duration-300 flex flex-col h-full"
     >
       <Link to={`/produto/${product.slug || product.id}`} className="block relative flex-1">
@@ -29,9 +32,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             referrerPolicy="no-referrer"
           />
+
+          <AnimatePresence>
+            {product.videoUrl && isHovered && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0 z-10 bg-black pointer-events-none"
+              >
+                <video
+                  src={getDriveVideoDirectLink(product.videoUrl)}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  referrerPolicy="no-referrer"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {product.mostWanted && (
-            <div className="absolute top-4 right-4 bg-brand-yellow text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg z-10">
+            <div className="absolute top-4 right-4 bg-brand-yellow text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg z-20">
               <Star size={10} className="fill-current" />
               Destaque
             </div>

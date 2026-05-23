@@ -107,7 +107,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 w-72 bg-white border-r border-gray-100 flex flex-col p-6 space-y-8 z-40 transition-all duration-300 md:static md:w-64 md:translate-x-0 h-[calc(100vh-64px)] md:h-screen",
+        "fixed left-0 w-72 bg-white border-r border-gray-100 flex flex-col p-6 space-y-8 z-40 transition-all duration-300 md:static md:w-64 md:translate-x-0 h-[calc(100vh-64px)] md:h-screen overflow-y-auto",
         "top-16", // Stays below mobile header
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>

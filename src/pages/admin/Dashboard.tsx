@@ -71,16 +71,16 @@ export function Dashboard() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border-2 border-red-100 p-6 rounded-[2rem] flex items-center gap-6 shadow-xl shadow-red-500/5"
+          className="bg-red-50 border-2 border-red-100 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-xl shadow-red-500/5 text-center sm:text-left"
         >
           <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-brand-red shrink-0 shadow-sm">
             <AlertCircle size={32} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h4 className="text-lg font-display text-red-900 leading-tight">Existem Aluguéis em Atraso!</h4>
-            <p className="text-sm text-red-600 font-medium">Há {stats.lateRentals} {stats.lateRentals === 1 ? 'cliente que ainda não devolveu' : 'clientes que ainda não devolveram'} o vestido.</p>
+            <p className="text-sm text-red-600 font-medium mt-1">Há {stats.lateRentals} {stats.lateRentals === 1 ? 'cliente que ainda não devolveu' : 'clientes que ainda não devolveram'} o vestido.</p>
           </div>
-          <Link to="/admin/alugueis" className="ml-auto bg-brand-red text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-red/20 active:scale-95 transition-all">
+          <Link to="/admin/alugueis" className="w-full sm:w-auto bg-brand-red text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-center shadow-lg shadow-brand-red/20 active:scale-95 transition-all whitespace-nowrap">
             Verificar Agora
           </Link>
         </motion.div>

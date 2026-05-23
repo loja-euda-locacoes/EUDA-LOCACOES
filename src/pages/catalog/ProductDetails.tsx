@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { doc, getDoc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Product, Settings } from '../../types';
-import { formatCurrency, generateWhatsAppLink, getDriveDirectLink } from '../../lib/utils';
+import { formatCurrency, generateWhatsAppLink, getDriveDirectLink, getDriveVideoDirectLink } from '../../lib/utils';
 import { ChevronLeft, ChevronRight, MessageCircle, Share2, Ruler, Info, ShoppingBag, Video, Calendar as CalendarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNotification } from '../../context/NotificationContext';
@@ -97,12 +97,14 @@ export function ProductDetails() {
 
   if (!product) return null;
 
+  const totalMediaLength = product.images.length + (product.videoUrl ? 1 : 0);
+
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % totalMediaLength);
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + totalMediaLength) % totalMediaLength);
   };
 
   const handleWhatsAppRent = () => {
@@ -161,19 +163,40 @@ export function ProductDetails() {
         <div className="space-y-4">
           <div className="relative aspect-[3/4] bg-white rounded-3xl overflow-hidden shadow-2xl group">
             <AnimatePresence mode="wait">
-              <motion.img
-                key={currentImageIndex}
-                src={getDriveDirectLink(product.images[currentImageIndex])}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
+              {currentImageIndex < product.images.length ? (
+                <motion.img
+                  key={currentImageIndex}
+                  src={getDriveDirectLink(product.images[currentImageIndex])}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <motion.div
+                  key="product-details-video"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full bg-black relative"
+                >
+                  <video
+                    src={getDriveVideoDirectLink(product.videoUrl)}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    referrerPolicy="no-referrer"
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            {product.images.length > 1 && (
+            {totalMediaLength > 1 && (
               <>
                 <button
                   onClick={prevImage}
@@ -190,8 +213,8 @@ export function ProductDetails() {
               </>
             )}
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {product.images.map((_, i) => (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+              {Array.from({ length: totalMediaLength }).map((_, i) => (
                 <div
                   key={i}
                   className={`w-2 h-2 rounded-full transition-all ${
@@ -214,6 +237,25 @@ export function ProductDetails() {
                 <img src={getDriveDirectLink(img)} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
               </button>
             ))}
+
+            {product.videoUrl && (
+              <button
+                onClick={() => setCurrentImageIndex(product.images.length)}
+                className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all relative ${
+                  currentImageIndex === product.images.length ? 'border-brand-red scale-105' : 'border-transparent opacity-60'
+                }`}
+              >
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white z-10">
+                  <Video size={18} className="animate-pulse" />
+                </div>
+                <img 
+                  src={getDriveDirectLink(product.mainImage || product.images[0])} 
+                  className="w-full h-full object-cover" 
+                  alt="Video thumbnail"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
+            )}
           </div>
         </div>
 
@@ -259,11 +301,14 @@ export function ProductDetails() {
                   <h3 className="text-xs font-black uppercase tracking-widest">Vídeo do Vestido</h3>
                 </div>
                 <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-black border border-[#EEE] shadow-xl">
-                  <iframe 
-                    src={product.videoUrl} 
-                    className="w-full h-full" 
-                    allow="autoplay"
-                    title="Detalhes em vídeo"
+                  <video 
+                    src={getDriveVideoDirectLink(product.videoUrl)} 
+                    className="w-full h-full object-cover" 
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    referrerPolicy="no-referrer"
                   />
                 </div>
               </div>

@@ -192,9 +192,9 @@ export function Customers() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden"
+              className="relative w-[calc(100%-2rem)] md:w-full max-w-2xl bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden"
             >
-              <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-8">
+              <form onSubmit={handleSubmit} className="p-6 md:p-12 space-y-6 md:space-y-8 max-h-[90vh] overflow-y-auto">
                 <div className="text-center space-y-2">
                   <h3 className="text-3xl font-display text-gray-900 leading-none">Cadastrar Cliente</h3>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Informações básicas e contato</p>
