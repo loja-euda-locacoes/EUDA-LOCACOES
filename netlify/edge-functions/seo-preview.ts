@@ -73,44 +73,81 @@ export default async (request: Request, context: Context) => {
     } 
     // Detect if we are loading a product detail page
     else if (path.startsWith("/produto/")) {
-      const slugOrId = path.split("/").pop() || "";
+      // Clean trailing slashes and extract product identifier robustly
+      const cleanPath = path.replace(/\/+$/, "");
+      const slugOrId = decodeURIComponent(cleanPath.split("/").pop() || "");
+      
       if (slugOrId) {
         try {
-          // 1. Query by unique slug
-          const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
-          const queryRes = await fetch(queryUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              structuredQuery: {
-                from: [{ collectionId: 'products' }],
-                where: {
-                  fieldFilter: {
-                    field: { fieldPath: 'slug' },
-                    op: 'EQUAL',
-                    value: { stringValue: slugOrId }
-                  }
-                },
-                limit: 1
-              }
-            })
-          });
-
           let productDoc: any = null;
 
-          if (queryRes.ok) {
-            const queryData = await queryRes.json();
-            if (queryData && queryData.length > 0 && queryData[0].document) {
-              productDoc = queryData[0].document;
-            }
-          }
-
-          // 2. Fallback to get by Document ID directly
-          if (!productDoc) {
+          // 1. First attempt: Get document by ID directly (fastest, standard REST GET)
+          try {
             const docUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents/products/${slugOrId}`;
             const docRes = await fetch(docUrl);
             if (docRes.ok) {
               productDoc = await docRes.json();
+            }
+          } catch (e) {
+            console.error("Error fetching product by ID direct REST:", e);
+          }
+
+          // 2. Second attempt: List all products and match slug/id locally (highly resilient fallback)
+          if (!productDoc) {
+            try {
+              const listUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents/products?pageSize=200`;
+              const listRes = await fetch(listUrl);
+              if (listRes.ok) {
+                const listData = await listRes.json();
+                const docs = listData.documents || [];
+                
+                productDoc = docs.find((d: any) => {
+                  const f = d.fields || {};
+                  const docId = d.name ? d.name.split('/').pop() : '';
+                  const docSlug = f.slug?.stringValue || '';
+                  
+                  // Handle exact or case-insensitive matches for safety
+                  return docSlug === slugOrId || 
+                         docSlug.toLowerCase() === slugOrId.toLowerCase() ||
+                         docId === slugOrId ||
+                         docId.toLowerCase() === slugOrId.toLowerCase();
+                });
+              }
+            } catch (e) {
+              console.error("Error listing documents for slug fallback search:", e);
+            }
+          }
+
+          // 3. Third attempt: runQuery structured query
+          if (!productDoc) {
+            try {
+              const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
+              const queryRes = await fetch(queryUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  structuredQuery: {
+                    from: [{ collectionId: 'products' }],
+                    where: {
+                      fieldFilter: {
+                        field: { fieldPath: 'slug' },
+                        op: 'EQUAL',
+                        value: { stringValue: slugOrId }
+                      }
+                    },
+                    limit: 1
+                  }
+                })
+              });
+
+              if (queryRes.ok) {
+                const queryData = await queryRes.json();
+                if (queryData && queryData.length > 0 && queryData[0].document) {
+                  productDoc = queryData[0].document;
+                }
+              }
+            } catch (e) {
+              console.error("Error executing product runQuery:", e);
             }
           }
 
@@ -134,7 +171,7 @@ export default async (request: Request, context: Context) => {
             }
           }
         } catch (e) {
-          console.error("Error fetching product in edge function:", e);
+          console.error("Error in product extraction block:", e);
         }
       }
     }
@@ -143,6 +180,11 @@ export default async (request: Request, context: Context) => {
 
     const titleEscaped = escapeHtml(title);
     const descEscaped = escapeHtml(desc);
+
+    // Make sure image URLs are always absolute paths for crawler trust
+    if (imageUrl && !imageUrl.startsWith("http")) {
+      imageUrl = `https://eudalocacao.netlify.app${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+    }
 
     // Replace <title> and other tag definitions dynamically
     html = html.replace(/<title>[^<]*<\/title>/i, `<title>${titleEscaped}</title>`);
