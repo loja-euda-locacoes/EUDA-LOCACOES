@@ -76,9 +76,9 @@ export function Customers() {
   };
 
   const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone.includes(search) ||
-    c.cpf.includes(search)
+    (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.phone || '').includes(search) ||
+    (c.cpf || '').includes(search)
   );
 
   return (
@@ -225,10 +225,9 @@ export function Customers() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">CPF</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">CPF (Opcional)</label>
                     <input
                       type="text"
-                      required
                       value={formData.cpf}
                       onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                       className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
@@ -236,10 +235,9 @@ export function Customers() {
                   </div>
 
                   <div className="space-y-2 col-span-full">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Endereço Completo</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Endereço Completo (Opcional)</label>
                     <input
                       type="text"
-                      required
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"

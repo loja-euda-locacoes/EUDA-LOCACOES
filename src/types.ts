@@ -19,11 +19,11 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
-  cpf: string;
-  address: string;
+  cpf?: string;
+  address?: string;
   instagram?: string;
-  secondaryContactName: string;
-  secondaryContactPhone: string;
+  secondaryContactName?: string;
+  secondaryContactPhone?: string;
   createdAt: string;
 }
 
