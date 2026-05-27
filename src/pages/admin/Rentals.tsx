@@ -21,6 +21,17 @@ export function Rentals() {
   
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [activeStatusSelectId, setActiveStatusSelectId] = useState<string | null>(null);
+
+  const [isQuickCustomerModalOpen, setIsQuickCustomerModalOpen] = useState(false);
+  const [quickCustomerFormData, setQuickCustomerFormData] = useState<Partial<Customer>>({
+    name: '',
+    phone: '',
+    cpf: '',
+    address: '',
+    instagram: '',
+    secondaryContactName: '',
+    secondaryContactPhone: '',
+  });
   
   const [formData, setFormData] = useState({
     customerId: '',
@@ -30,6 +41,31 @@ export function Rentals() {
     returnDate: '',
     notes: ''
   });
+
+  const handleQuickCustomerSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const docRef = await addDoc(collection(db, 'customers'), {
+        ...quickCustomerFormData,
+        createdAt: new Date().toISOString()
+      });
+      notify('Cliente cadastrado com sucesso!', 'success');
+      setFormData(prev => ({ ...prev, customerId: docRef.id }));
+      setIsQuickCustomerModalOpen(false);
+      setQuickCustomerFormData({
+        name: '',
+        phone: '',
+        cpf: '',
+        address: '',
+        instagram: '',
+        secondaryContactName: '',
+        secondaryContactPhone: '',
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'customers');
+      notify('Erro ao cadastrar cliente.', 'error');
+    }
+  };
 
   const openNewRental = () => {
     setEditingRentalId(null);
@@ -648,7 +684,16 @@ export function Rentals() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Cliente</label>
+                    <div className="flex justify-between items-center px-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cliente</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickCustomerModalOpen(true)}
+                        className="text-[10px] font-black uppercase text-brand-red hover:underline flex items-center gap-1"
+                      >
+                        <Plus size={10} /> Novo Cliente
+                      </button>
+                    </div>
                     <div className="relative">
                       <select
                         required
@@ -768,6 +813,106 @@ export function Rentals() {
         confirmText="Sim, Excluir"
         type="danger"
       />
+
+      {/* Quick Customer Registration Modal */}
+      <AnimatePresence>
+        {isQuickCustomerModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsQuickCustomerModalOpen(false)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-[calc(100%-2rem)] md:w-full max-w-xl bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden z-10"
+            >
+              <form onSubmit={handleQuickCustomerSubmit} className="p-6 md:p-10 space-y-6 md:space-y-8 max-h-[85vh] overflow-y-auto">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-display text-gray-900 leading-none">Cadastrar Novo Cliente</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Cadastro rápido direto da locação</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1 col-span-full">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Nome Completo</label>
+                    <input
+                      type="text"
+                      required
+                      value={quickCustomerFormData.name}
+                      onChange={(e) => setQuickCustomerFormData({ ...quickCustomerFormData, name: e.target.value })}
+                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">WhatsApp / Telefone</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="88 9 9999-9999"
+                      value={quickCustomerFormData.phone}
+                      onChange={(e) => setQuickCustomerFormData({ ...quickCustomerFormData, phone: e.target.value })}
+                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">CPF (Opcional)</label>
+                    <input
+                      type="text"
+                      value={quickCustomerFormData.cpf}
+                      onChange={(e) => setQuickCustomerFormData({ ...quickCustomerFormData, cpf: e.target.value })}
+                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1 col-span-full">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Endereço Completo (Opcional)</label>
+                    <input
+                      type="text"
+                      value={quickCustomerFormData.address}
+                      onChange={(e) => setQuickCustomerFormData({ ...quickCustomerFormData, address: e.target.value })}
+                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1 col-span-full">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Instagram (Opcional)</label>
+                    <input
+                      type="text"
+                      placeholder="@"
+                      value={quickCustomerFormData.instagram}
+                      onChange={(e) => setQuickCustomerFormData({ ...quickCustomerFormData, instagram: e.target.value })}
+                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-2xl p-4 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickCustomerModalOpen(false)}
+                    className="flex-1 py-4 text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-600 transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-[2] bg-brand-red text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-brand-red/20 active:scale-95 transition-all"
+                  >
+                    Salvar Cliente
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

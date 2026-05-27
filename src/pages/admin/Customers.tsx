@@ -1,8 +1,8 @@
 import { useEffect, useState, FormEvent } from 'react';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Customer } from '../../types';
-import { Plus, Search, User, Phone, Trash2, MessageCircle, ExternalLink } from 'lucide-react';
+import { Plus, Search, User, Phone, Trash2, MessageCircle, ExternalLink, Pencil } from 'lucide-react';
 import { cn, generateWhatsAppLink } from '../../lib/utils';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import { useNotification } from '../../context/NotificationContext';
@@ -14,6 +14,7 @@ export function Customers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Customer>>({
     name: '',
     phone: '',
@@ -41,12 +42,20 @@ export function Customers() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'customers'), {
-        ...formData,
-        createdAt: new Date().toISOString()
-      });
-      notify('Cliente cadastrado com sucesso!', 'success');
+      if (editingCustomerId) {
+        await updateDoc(doc(db, 'customers', editingCustomerId), {
+          ...formData
+        });
+        notify('Cliente atualizado com sucesso!', 'success');
+      } else {
+        await addDoc(collection(db, 'customers'), {
+          ...formData,
+          createdAt: new Date().toISOString()
+        });
+        notify('Cliente cadastrado com sucesso!', 'success');
+      }
       setIsModalOpen(false);
+      setEditingCustomerId(null);
       setFormData({
         name: '',
         phone: '',
@@ -57,9 +66,28 @@ export function Customers() {
         secondaryContactPhone: '',
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, 'customers');
-      notify('Erro ao cadastrar cliente.', 'error');
+      if (editingCustomerId) {
+        handleFirestoreError(err, OperationType.UPDATE, `customers/${editingCustomerId}`);
+        notify('Erro ao atualizar cliente.', 'error');
+      } else {
+        handleFirestoreError(err, OperationType.CREATE, 'customers');
+        notify('Erro ao cadastrar cliente.', 'error');
+      }
     }
+  };
+
+  const handleEditClick = (customer: Customer) => {
+    setEditingCustomerId(customer.id);
+    setFormData({
+      name: customer.name || '',
+      phone: customer.phone || '',
+      cpf: customer.cpf || '',
+      address: customer.address || '',
+      instagram: customer.instagram || '',
+      secondaryContactName: customer.secondaryContactName || '',
+      secondaryContactPhone: customer.secondaryContactPhone || '',
+    });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -95,7 +123,19 @@ export function Customers() {
           />
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setEditingCustomerId(null);
+            setFormData({
+              name: '',
+              phone: '',
+              cpf: '',
+              address: '',
+              instagram: '',
+              secondaryContactName: '',
+              secondaryContactPhone: '',
+            });
+            setIsModalOpen(true);
+          }}
           className="bg-brand-red text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-brand-red/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <Plus size={16} />
@@ -156,6 +196,13 @@ export function Customers() {
                         <MessageCircle size={18} />
                       </a>
                       <button
+                        onClick={() => handleEditClick(c)}
+                        className="w-10 h-10 bg-orange-50 text-brand-orange rounded-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+                        title="Editar"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
                         onClick={() => setDeleteModal({ isOpen: true, customerId: c.id })}
                         className="w-10 h-10 bg-red-50 text-brand-red rounded-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
                       >
@@ -196,7 +243,9 @@ export function Customers() {
             >
               <form onSubmit={handleSubmit} className="p-6 md:p-12 space-y-6 md:space-y-8 max-h-[90vh] overflow-y-auto">
                 <div className="text-center space-y-2">
-                  <h3 className="text-3xl font-display text-gray-900 leading-none">Cadastrar Cliente</h3>
+                  <h3 className="text-3xl font-display text-gray-900 leading-none">
+                    {editingCustomerId ? 'Editar Cliente' : 'Cadastrar Cliente'}
+                  </h3>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Informações básicas e contato</p>
                 </div>
 
@@ -292,7 +341,7 @@ export function Customers() {
                     type="submit"
                     className="flex-[2] bg-brand-red text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-brand-red/20 active:scale-95 transition-all"
                   >
-                    Salvar Cliente
+                    {editingCustomerId ? 'Salvar Alterações' : 'Salvar Cliente'}
                   </button>
                 </div>
               </form>
